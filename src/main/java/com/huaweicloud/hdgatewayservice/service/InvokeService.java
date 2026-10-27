@@ -71,7 +71,7 @@ public class InvokeService {
                     "方法 " + method + " 不在路由 " + req.route() + " 允许列表 " + allowed + " 内", null);
         }
 
-        String path = validatePath(req.path());
+        String path = req.path() == null ? "" : validatePath(req.path());
         String query = req.query() == null ? "" : req.query();
         Map<String, String> safeHeaders = sanitizeHeaders(req.headers());
         String body = req.body() == null ? "" : req.body().toString();

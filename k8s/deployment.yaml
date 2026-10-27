@@ -127,23 +127,35 @@ spec:
                   key: GW_HIS_IAM_DOMAIN_NAME
                   optional: true
             # ── 路由白名单（route 名固定在 application.yml，url 用环境变量注入实际绿区地址）──
-            - name: GW_ROUTE_HIS_DEMO_URL
+            - name: GW_ROUTE_COUPON_CHECK_URL
               valueFrom:
                 secretKeyRef:
                   name: hdgw-secrets
-                  key: GW_ROUTE_HIS_DEMO_URL
+                  key: GW_ROUTE_COUPON_CHECK_URL
                   optional: true
-            - name: GW_ROUTE_APIG_DEMO_URL
+            - name: GW_ROUTE_COUPON_ISSUE_URL
               valueFrom:
                 secretKeyRef:
                   name: hdgw-secrets
-                  key: GW_ROUTE_APIG_DEMO_URL
+                  key: GW_ROUTE_COUPON_ISSUE_URL
                   optional: true
-            - name: GW_ROUTE_APIG_DEMO_APPCODE
+            - name: GW_ROUTE_COMPETITION_SIGNUP_URL
               valueFrom:
                 secretKeyRef:
                   name: hdgw-secrets
-                  key: GW_ROUTE_APIG_DEMO_APPCODE
+                  key: GW_ROUTE_COMPETITION_SIGNUP_URL
+                  optional: true
+            - name: GW_ROUTE_CODEARTS_PACKAGE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_ROUTE_CODEARTS_PACKAGE_URL
+                  optional: true
+            - name: GW_ROUTE_OFFICEACE_SUBSCRIPTION_URL
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_ROUTE_OFFICEACE_SUBSCRIPTION_URL
                   optional: true
             - name: GW_APPCODE
               valueFrom:

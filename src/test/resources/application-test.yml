@@ -14,15 +14,14 @@ spring:
 
 gateway:
   routes:
-    - name: his-demo
-      url: "https://his.example.com"
+    - name: coupon-check
+      url: "https://his.example.com/coupon/check"
       auth: HIS
-      methods: GET,POST
-    - name: apig-demo
-      url: "https://apig.example.com"
-      auth: APPCODE
-      app-code: "route-appcode"
-      methods: GET,POST
+      methods: POST
+    - name: codearts-package
+      url: "https://direct.example.com/codearts/package"
+      auth: NONE
+      methods: GET
 
 hdgateway:
   his:

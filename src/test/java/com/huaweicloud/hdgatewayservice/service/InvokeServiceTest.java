@@ -183,6 +183,17 @@ class InvokeServiceTest {
     }
 
     @Test
+    void fixedRouteInvokeWithoutPathUsesBaseUrlOnly() throws Exception {
+        when(passThroughTransport.exchange(any(), eq("GET"), eq(""), eq(""),
+                any(), eq(""))).thenReturn(new Transport.RawResponse(200, "ok"));
+
+        ResponseEntity<String> resp = invoke(req("direct", null, "GET", "", null, null));
+
+        assertEquals(200, resp.getStatusCode().value());
+        verify(passThroughTransport).exchange(any(), eq("GET"), eq(""), eq(""), any(), eq(""));
+    }
+
+    @Test
     void invalidPathRejected() {
         assertInvalidPath("v1/check");
         assertInvalidPath("//evil.example.com/x");

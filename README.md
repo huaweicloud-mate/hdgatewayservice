@@ -32,11 +32,24 @@ hdgatewayservice (Spring Boot)
 
 ### 1. 核心 invoke `POST /invoke`
 
+固定路由（URL 即完整绿区接口，如激励金查券）时 `path` 省略：
+
 ```bash
 curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke \
   -H 'Content-Type: application/json' -H 'X-Api-Key: <API Key>' \
   -d '{
-    "route": "his-demo",
+    "route": "coupon-check",
+    "body": {"customer_id": "<domainId>"}
+  }'
+```
+
+通用透传路由（route.url 为上游基址）时带 `path`：
+
+```bash
+curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke \
+  -H 'Content-Type: application/json' -H 'X-Api-Key: <API Key>' \
+  -d '{
+    "route": "his-open",
     "path": "/v1/check",
     "method": "POST",
     "query": "k=v",
@@ -48,7 +61,7 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 | 字段 | 必填 | 说明 |
 |------|------|------|
 | `route` | 是 | 路由白名单名称（见 `GET /routes`） |
-| `path` | 是 | 拼接在上游 URL 后，必须以 `/` 开头；禁止 scheme、路径穿越、控制字符 |
+| `path` | 否 | 拼接在路由 URL 后，必须以 `/` 开头；禁止 scheme、路径穿越、控制字符；**固定路由（URL 即完整接口）省略** |
 | `method` | 否 | 默认 `POST`，须在路由 methods 白名单内 |
 | `query` | 否 | 原始 query string（调用方自行 URL 编码），如 `"k=v&x=%20"` |
 | `headers` | 否 | 业务透传头；凭证/主机/逐跳头按黑名单丢弃（host、authorization、cookie、x-apig*、x-hw*、x-auth*、x-api-key、x-traceid 等） |
@@ -66,8 +79,8 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 
 ```json
 [
-  { "name": "his-demo", "auth": "HIS", "methods": ["GET","POST"], "configured": true },
-  { "name": "apig-demo", "auth": "APPCODE", "methods": ["GET","POST"], "configured": true }
+  { "name": "coupon-check", "auth": "HIS", "methods": ["POST"], "configured": true },
+  { "name": "codearts-package", "auth": "NONE", "methods": ["GET"], "configured": true }
 ]
 ```
 
@@ -79,7 +92,17 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 | `APPCODE` | `X-Apig-AppCode` 简单认证（华为云 APIG） | 路由级 `app-code`，回退全局 `GW_APPCODE` |
 | `NONE` | 直连（预置路由自带凭证） | — |
 
-路由在 `application.yml` 的 `gateway.routes` 注册（name 固定、url 用环境变量注入实际绿区地址），新增路由 = 加一条配置。
+路由在 `application.yml` 的 `gateway.routes` 注册（name 固定、url 用环境变量注入实际绿区地址），新增路由 = 加一条配置。**首版已预置 hdkitservice 正在调用的 5 个绿区接口**：
+
+| 网关路由 | 对应 hdkitservice 调用 | 认证 | method |
+|----------|------------------------|------|--------|
+| `coupon-check` | 激励金查券 `INCENTIVE_CHECK_URL` | HIS（4头+IAM） | POST |
+| `coupon-issue` | 激励金发券 `INCENTIVE_ISSUE_URL` | HIS（4头+IAM） | POST |
+| `competition-signup` | 竞赛报名 `COMPETITION_SIGNUP_URL` | HIS（4头+IAM） | POST |
+| `codearts-package` | 码道套餐 `CODEARTS_PACKAGE_URL` | 直连 | GET |
+| `officeace-subscription` | 果办订阅 `OFFICEACE_SUBSCRIPTION_URL` | 直连 | GET |
+
+> 这 5 条均为**固定路由**：url 注入完整接口地址，invoke 时 `path` 省略。后续接入新绿区接口 = 加一条路由配置。
 
 ### 3. API Key 配置（数据库直配，无管理接口）
 
@@ -127,8 +150,11 @@ mvn package    # 打包 target/hdgatewayservice-0.0.1.jar
 export MYSQL_HOST=127.0.0.1 MYSQL_DATABASE=hdgatewayservice MYSQL_USER=root MYSQL_PASSWORD=<pwd>
 export REDIS_HOST=127.0.0.1 DEPLOY_ENV=test
 export GW_HIS_APPCODE=<绿区 AppCode> GW_HIS_HW_ID=<HW-ID> GW_HIS_APPKEY=<APPKEY> GW_HIS_AUTH_TOKEN=<token>
-export GW_ROUTE_HIS_DEMO_URL=https://<绿区 HIS 基址>
-export GW_ROUTE_APIG_DEMO_URL=https://<APIG 基址>
+export GW_ROUTE_COUPON_CHECK_URL=https://<绿区激励金查券完整地址>
+export GW_ROUTE_COUPON_ISSUE_URL=https://<绿区激励金发券完整地址>
+export GW_ROUTE_COMPETITION_SIGNUP_URL=https://<绿区竞赛报名完整地址>
+export GW_ROUTE_CODEARTS_PACKAGE_URL=https://<码道套餐查询完整地址>
+export GW_ROUTE_OFFICEACE_SUBSCRIPTION_URL=https://<果办订阅查询完整地址>
 
 java -jar target/hdgatewayservice-0.0.1.jar   # 端口 3003
 ```

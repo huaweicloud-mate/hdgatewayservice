@@ -24,17 +24,30 @@ spring:
 
 gateway:
   # 路由白名单：蓝区调用方只能通过 route 名访问已配置的绿区上游，天然防 SSRF。
-  # url 支持环境变量覆盖；auth 取值：HIS（4 头 apigw + IAM token）/ APPCODE（华为云 APIG 简单认证）/ NONE（直连）
+  # url 支持环境变量覆盖；固定路由的 url 即完整接口地址（invoke 时 path 省略）；
+  # auth 取值：HIS（4 头 apigw + IAM token）/ APPCODE（华为云 APIG 简单认证）/ NONE（直连）
+  # 以下 5 条对应 hdkitservice 已在调用的绿区接口，url 由部署环境注入实际值
   routes:
-    - name: his-demo
-      url: "${GW_ROUTE_HIS_DEMO_URL:}"
+    - name: coupon-check
+      url: "${GW_ROUTE_COUPON_CHECK_URL:}"
       auth: HIS
-      methods: GET,POST
-    - name: apig-demo
-      url: "${GW_ROUTE_APIG_DEMO_URL:}"
-      auth: APPCODE
-      app-code: "${GW_ROUTE_APIG_DEMO_APPCODE:}"
-      methods: GET,POST
+      methods: POST
+    - name: coupon-issue
+      url: "${GW_ROUTE_COUPON_ISSUE_URL:}"
+      auth: HIS
+      methods: POST
+    - name: competition-signup
+      url: "${GW_ROUTE_COMPETITION_SIGNUP_URL:}"
+      auth: HIS
+      methods: POST
+    - name: codearts-package
+      url: "${GW_ROUTE_CODEARTS_PACKAGE_URL:}"
+      auth: NONE
+      methods: GET
+    - name: officeace-subscription
+      url: "${GW_ROUTE_OFFICEACE_SUBSCRIPTION_URL:}"
+      auth: NONE
+      methods: GET
 
 hdgateway:
   his:
