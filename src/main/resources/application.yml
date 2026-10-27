@@ -40,6 +40,14 @@ gateway:
       url: "${GW_ROUTE_COMPETITION_SIGNUP_URL:}"
       auth: HIS
       methods: POST
+    - name: agreement-query
+      url: "${GW_ROUTE_AGREEMENT_QUERY_URL:https://developer.myhuaweicloud.com/v1/agreementservice/developer/agreement/query}"
+      auth: APIG
+      methods: GET,POST
+    - name: agreement-sign
+      url: "${GW_ROUTE_AGREEMENT_SIGN_URL:https://developer.myhuaweicloud.com/v1/agreementservice/developer/agreement/sign}"
+      auth: APIG
+      methods: POST
     - name: codearts-package
       url: "${GW_ROUTE_CODEARTS_PACKAGE_URL:}"
       auth: NONE

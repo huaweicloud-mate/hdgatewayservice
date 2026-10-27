@@ -21,6 +21,7 @@ public class RouteRegistry {
     private static final Logger log = LoggerFactory.getLogger(RouteRegistry.class);
 
     public static final String AUTH_HIS = "HIS";
+    public static final String AUTH_APIG = "APIG";
     public static final String AUTH_APPCODE = "APPCODE";
     public static final String AUTH_NONE = "NONE";
 
@@ -59,7 +60,7 @@ public class RouteRegistry {
     public static String authOf(GatewayRoutesProperties.RouteDef def) {
         String auth = def.auth() == null ? AUTH_NONE : def.auth().trim().toUpperCase(Locale.ROOT);
         return switch (auth) {
-            case AUTH_HIS, AUTH_APPCODE, AUTH_NONE -> auth;
+            case AUTH_HIS, AUTH_APIG, AUTH_APPCODE, AUTH_NONE -> auth;
             default -> AUTH_NONE;
         };
     }

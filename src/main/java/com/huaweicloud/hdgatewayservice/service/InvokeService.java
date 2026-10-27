@@ -5,6 +5,7 @@ import com.huaweicloud.hdgatewayservice.config.GatewayRoutesProperties;
 import com.huaweicloud.hdgatewayservice.config.RouteRegistry;
 import com.huaweicloud.hdgatewayservice.model.InvokeRequest;
 import com.huaweicloud.hdgatewayservice.model.RouteInfo;
+import com.huaweicloud.hdgatewayservice.transport.ApigTransport;
 import com.huaweicloud.hdgatewayservice.transport.AppCodeTransport;
 import com.huaweicloud.hdgatewayservice.transport.HisTransport;
 import com.huaweicloud.hdgatewayservice.transport.PassThroughTransport;
@@ -33,15 +34,17 @@ public class InvokeService {
 
     private final RouteRegistry registry;
     private final HisTransport hisTransport;
+    private final ApigTransport apigTransport;
     private final AppCodeTransport appCodeTransport;
     private final PassThroughTransport passThroughTransport;
     private final GatewayConfig config;
 
     public InvokeService(RouteRegistry registry, HisTransport hisTransport,
-                         AppCodeTransport appCodeTransport, PassThroughTransport passThroughTransport,
-                         GatewayConfig config) {
+                         ApigTransport apigTransport, AppCodeTransport appCodeTransport,
+                         PassThroughTransport passThroughTransport, GatewayConfig config) {
         this.registry = registry;
         this.hisTransport = hisTransport;
+        this.apigTransport = apigTransport;
         this.appCodeTransport = appCodeTransport;
         this.passThroughTransport = passThroughTransport;
         this.config = config;
@@ -71,7 +74,7 @@ public class InvokeService {
                     "方法 " + method + " 不在路由 " + req.route() + " 允许列表 " + allowed + " 内", null);
         }
 
-        String path = req.path() == null ? "" : validatePath(req.path());
+        String path = (req.path() == null || req.path().isBlank()) ? "" : validatePath(req.path());
         String query = req.query() == null ? "" : req.query();
         Map<String, String> safeHeaders = sanitizeHeaders(req.headers());
         String body = req.body() == null ? "" : req.body().toString();
@@ -155,6 +158,7 @@ public class InvokeService {
     private Transport transportOf(GatewayRoutesProperties.RouteDef route) {
         return switch (RouteRegistry.authOf(route)) {
             case RouteRegistry.AUTH_HIS -> hisTransport;
+            case RouteRegistry.AUTH_APIG -> apigTransport;
             case RouteRegistry.AUTH_APPCODE -> appCodeTransport;
             default -> passThroughTransport;
         };

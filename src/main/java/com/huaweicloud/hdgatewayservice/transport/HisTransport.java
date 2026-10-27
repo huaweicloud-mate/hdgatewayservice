@@ -17,8 +17,8 @@ import java.util.Map;
 
 /**
  * 绿区 HIS 传输层（自蓝本 ApigwGateway 移植扩展）：4 头 POST/GET
- * （X-APIG-APPCODE / X-HW-ID / X-HW-APPKEY / X-auth-token）与 IAM token 的获取/缓存。
- * 网关持有全部绿区凭证，蓝区调用方不接触。
+ * （X-APIG-APPCODE / X-HW-ID / X-HW-APPKEY / X-auth-token）。
+ * IAM token 由共用 IamTokenProvider 提供；网关持有全部绿区凭证，蓝区调用方不接触。
  */
 @Component
 public class HisTransport implements Transport {
@@ -28,14 +28,14 @@ public class HisTransport implements Transport {
     private final GatewayConfig config;
     private final ObjectMapper mapper;
     private final RestClient restClient;
+    private final IamTokenProvider iamTokenProvider;
 
-    private String cachedIamToken;
-    private long cachedIamTokenExpiry;
-
-    public HisTransport(GatewayConfig config, ObjectMapper mapper, RestClient restClient) {
+    public HisTransport(GatewayConfig config, ObjectMapper mapper, RestClient restClient,
+                        IamTokenProvider iamTokenProvider) {
         this.config = config;
         this.mapper = mapper;
         this.restClient = restClient;
+        this.iamTokenProvider = iamTokenProvider;
     }
 
     @Override
@@ -43,7 +43,7 @@ public class HisTransport implements Transport {
                                 String query, Map<String, String> callerHeaders, String body) {
         String url = buildUrl(route, path, query);
         try {
-            String token = getAuthToken();
+            String token = iamTokenProvider.getAuthToken();
             var spec = restClient.method(HttpMethod.valueOf(method))
                     .uri(url)
                     .header("X-APIG-APPCODE", config.hisAppCode())
@@ -107,69 +107,5 @@ public class HisTransport implements Transport {
         }
         log.error("[his] {} {} failed: {}", method, url, e.getMessage());
         return new UpstreamException(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName(), e, false);
-    }
-
-    public String getAuthToken() {
-        if ("test".equalsIgnoreCase(config.deployEnv())) {
-            return config.hisAuthToken();
-        }
-        if (cachedIamToken != null && System.currentTimeMillis() < cachedIamTokenExpiry - 600000) {
-            return cachedIamToken;
-        }
-        return fetchIamToken();
-    }
-
-    private String fetchIamToken() {
-        String endpoint = config.hisIamEndpoint();
-        log.info("[his] fetching IAM token from {}", endpoint);
-        try {
-            String body = buildJson(ob -> {
-                var auth = ob.putObject("auth");
-                var identity = auth.putObject("identity");
-                identity.putArray("methods").add("password");
-                var password = identity.putObject("password");
-                var user = password.putObject("user");
-                var domain = user.putObject("domain");
-                domain.put("name", config.hisIamDomainName());
-                user.put("name", config.hisIamUsername());
-                user.put("password", config.hisIamPassword());
-            });
-
-            var respEntity = restClient.method(HttpMethod.POST)
-                    .uri(endpoint)
-                    .body(body)
-                    .retrieve()
-                    .toEntity(String.class);
-
-            String token = respEntity.getHeaders().getFirst("X-Subject-Token");
-            if (token == null || token.isEmpty()) {
-                throw new IllegalStateException("IAM response missing X-Subject-Token header");
-            }
-
-            String respBody = respEntity.getBody();
-            if (respBody != null && !respBody.isEmpty()) {
-                JsonNode root = mapper.readTree(respBody);
-                if (root.has("token") && root.get("token").has("expires_at")) {
-                    String expiresAt = root.get("token").get("expires_at").asText();
-                    cachedIamTokenExpiry = java.time.Instant.parse(expiresAt).toEpochMilli();
-                } else {
-                    cachedIamTokenExpiry = System.currentTimeMillis() + 23 * 3600 * 1000L;
-                }
-            } else {
-                cachedIamTokenExpiry = System.currentTimeMillis() + 23 * 3600 * 1000L;
-            }
-            cachedIamToken = token;
-            log.info("[his] IAM token acquired, expires at {}",
-                    java.time.Instant.ofEpochMilli(cachedIamTokenExpiry));
-            return token;
-        } catch (Exception e) {
-            throw new UpstreamException("获取 IAM Token 失败: " + e.getMessage(), e, false);
-        }
-    }
-
-    public String buildJson(java.util.function.Consumer<com.fasterxml.jackson.databind.node.ObjectNode> fn) {
-        var node = mapper.createObjectNode();
-        fn.accept(node);
-        return node.toString();
     }
 }

@@ -89,6 +89,7 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 | auth | 上游认证方式 | 凭证来源 |
 |------|--------------|----------|
 | `HIS` | 4 头 apigw（X-APIG-APPCODE / X-HW-ID / X-HW-APPKEY / X-auth-token），production 下 token 经 IAM 动态获取并缓存（提前 10min 刷新），test 下直接用静态 token | 网关 `GW_HIS_*` 环境变量 |
+| `APIG` | 仅 `x-auth-token` 头（IAM 动态 token，与 HIS 共用同一套 IAM 凭证与缓存），适用于 developer.myhuaweicloud.com 等只校验 x-auth-token 的绿区接口 | 同 `GW_HIS_IAM_*` |
 | `APPCODE` | `X-Apig-AppCode` 简单认证（华为云 APIG） | 路由级 `app-code`，回退全局 `GW_APPCODE` |
 | `NONE` | 直连（预置路由自带凭证） | — |
 
@@ -99,6 +100,7 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 | `coupon-check` | 激励金查券 `INCENTIVE_CHECK_URL` | HIS（4头+IAM） | POST |
 | `coupon-issue` | 激励金发券 `INCENTIVE_ISSUE_URL` | HIS（4头+IAM） | POST |
 | `competition-signup` | 竞赛报名 `COMPETITION_SIGNUP_URL` | HIS（4头+IAM） | POST |
+| `agreement-query` | 协议查询 `agreementservice/developer/agreement/query` | APIG（x-auth-token） | GET,POST |
 | `codearts-package` | 码道套餐 `CODEARTS_PACKAGE_URL` | 直连 | GET |
 | `officeace-subscription` | 果办订阅 `OFFICEACE_SUBSCRIPTION_URL` | 直连 | GET |
 

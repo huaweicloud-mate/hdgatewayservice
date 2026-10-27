@@ -19,6 +19,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(apiKeyInterceptor)
                 .addPathPatterns(
                         "/rest/developer/server/hdgatewayservice/invoke",
-                        "/rest/developer/server/hdgatewayservice/routes");
+                        "/rest/developer/server/hdgatewayservice/routes",
+                        "/rest/developer/server/hdgatewayservice/agreement/**");
     }
 }

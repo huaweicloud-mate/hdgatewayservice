@@ -6,6 +6,7 @@ import com.huaweicloud.hdgatewayservice.config.GatewayRoutesProperties;
 import com.huaweicloud.hdgatewayservice.config.RouteRegistry;
 import com.huaweicloud.hdgatewayservice.model.InvokeRequest;
 import com.huaweicloud.hdgatewayservice.model.RouteInfo;
+import com.huaweicloud.hdgatewayservice.transport.ApigTransport;
 import com.huaweicloud.hdgatewayservice.transport.AppCodeTransport;
 import com.huaweicloud.hdgatewayservice.transport.HisTransport;
 import com.huaweicloud.hdgatewayservice.transport.PassThroughTransport;
@@ -42,6 +43,8 @@ class InvokeServiceTest {
             "his-demo", "https://his.example.com", "HIS", List.of("GET", "POST"), null);
     private static final GatewayRoutesProperties.RouteDef APIG_ROUTE = new GatewayRoutesProperties.RouteDef(
             "apig-demo", "https://apig.example.com/", "APPCODE", List.of("POST"), "route-appcode");
+    private static final GatewayRoutesProperties.RouteDef XAUTH_ROUTE = new GatewayRoutesProperties.RouteDef(
+            "agreement-query", "https://developer.example.com/v1/agreement/query", "APIG", List.of("GET", "POST"), null);
     private static final GatewayRoutesProperties.RouteDef NONE_ROUTE = new GatewayRoutesProperties.RouteDef(
             "direct", "https://direct.example.com", null, List.of("GET"), null);
     private static final GatewayRoutesProperties.RouteDef UNCONFIGURED = new GatewayRoutesProperties.RouteDef(
@@ -49,6 +52,8 @@ class InvokeServiceTest {
 
     @Mock
     private HisTransport hisTransport;
+    @Mock
+    private ApigTransport apigTransport;
     @Mock
     private AppCodeTransport appCodeTransport;
     @Mock
@@ -59,14 +64,14 @@ class InvokeServiceTest {
     @BeforeEach
     void setUp() {
         GatewayRoutesProperties props = new GatewayRoutesProperties();
-        props.setRoutes(new java.util.ArrayList<>(List.of(HIS_ROUTE, APIG_ROUTE, NONE_ROUTE, UNCONFIGURED)));
+        props.setRoutes(new java.util.ArrayList<>(List.of(HIS_ROUTE, APIG_ROUTE, XAUTH_ROUTE, NONE_ROUTE, UNCONFIGURED)));
         RouteRegistry registry = new RouteRegistry(props);
 
         GatewayConfig config = new GatewayConfig();
         ReflectionTestUtils.setField(config, "callerHeaderDeny",
                 "host,content-length,authorization,cookie,connection,transfer-encoding,expect,x-apig,x-hw,x-auth,x-api-key,x-traceid");
 
-        service = new InvokeService(registry, hisTransport, appCodeTransport, passThroughTransport, config);
+        service = new InvokeService(registry, hisTransport, apigTransport, appCodeTransport, passThroughTransport, config);
     }
 
     private InvokeRequest req(String route, String path, String method, String query,
@@ -104,6 +109,19 @@ class InvokeServiceTest {
         assertEquals(200, resp.getStatusCode().value());
         verify(appCodeTransport).exchange(any(), eq("POST"), eq("/v1/signup"), eq(""), any(), anyString());
         verify(hisTransport, never()).exchange(any(), anyString(), anyString(), anyString(), any(), anyString());
+    }
+
+    @Test
+    void apigXAuthRouteRoutedToApigTransport() throws Exception {
+        when(apigTransport.exchange(any(), eq("POST"), eq(""), eq(""), any(), anyString()))
+                .thenReturn(new Transport.RawResponse(200, "{\"agreements\":[]}"));
+
+        ResponseEntity<String> resp = invoke(req("agreement-query", "", "POST", "", null, Map.of()));
+
+        assertEquals(200, resp.getStatusCode().value());
+        verify(apigTransport).exchange(any(), eq("POST"), eq(""), eq(""), any(), anyString());
+        verify(hisTransport, never()).exchange(any(), anyString(), anyString(), anyString(), any(), anyString());
+        verify(appCodeTransport, never()).exchange(any(), anyString(), anyString(), anyString(), any(), anyString());
     }
 
     @Test
@@ -245,7 +263,7 @@ class InvokeServiceTest {
     @Test
     void routesListNeverContainsUpstreamUrl() {
         List<RouteInfo> routes = service.routes();
-        assertEquals(4, routes.size());
+        assertEquals(5, routes.size());
         for (RouteInfo info : routes) {
             assertNotNull(info.name());
             assertNotNull(info.auth());
