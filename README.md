@@ -1,0 +1,2 @@
+# hdgatewayservice
+用作蓝区和绿区交互的网关，蓝区应用统一调用此网关完成包括his，apig等调用方式对接
