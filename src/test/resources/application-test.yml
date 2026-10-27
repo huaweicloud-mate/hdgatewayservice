@@ -35,5 +35,5 @@ hdgateway:
     iam-domain-name: "d"
   app-code: "global-appcode"
   deploy-env: test
-  log-mask-keys: "password,passwd,pwd,secret,token,sk,access_key,private_key,authorization,cookie,credential,appcode,app_code,api_key,apikey"
+  log-mask-keys: "password,passwd,pwd,secret,token,sk,access_key,private_key,authorization,cookie,credential,appcode,app_code,api_key,apikey,id_card_number,realname,contact_phone,contact_email"
   caller-header-deny: "host,content-length,authorization,cookie,connection,transfer-encoding,expect,x-apig,x-hw,x-auth,x-api-key,x-traceid"

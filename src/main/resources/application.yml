@@ -48,6 +48,10 @@ gateway:
       url: "${GW_ROUTE_AGREEMENT_SIGN_URL:https://developer.myhuaweicloud.com/v1/agreementservice/developer/agreement/sign}"
       auth: APIG
       methods: POST
+    - name: realname-developer-info
+      url: "${GW_ROUTE_REALNAME_DEVELOPER_INFO_URL:https://developer.myhuaweicloud.com/v1/hdaccountservice/realname/get-developer-info}"
+      auth: APIG
+      methods: GET,POST
     - name: codearts-package
       url: "${GW_ROUTE_CODEARTS_PACKAGE_URL:}"
       auth: NONE
@@ -71,7 +75,7 @@ hdgateway:
   # 全局兜底 APPCODE（路由未单独配置 app-code 时使用）
   app-code: "${GW_APPCODE:}"
   deploy-env: "${DEPLOY_ENV:production}"
-  log-mask-keys: "${LOG_MASK_KEYS:password,passwd,pwd,secret,token,sk,access_key,private_key,authorization,cookie,credential,appcode,app_code,api_key,apikey}"
+  log-mask-keys: "${LOG_MASK_KEYS:password,passwd,pwd,secret,token,sk,access_key,private_key,authorization,cookie,credential,appcode,app_code,api_key,apikey,id_card_number,realname,contact_phone,contact_email}"
   connect-timeout-ms: "${GW_CONNECT_TIMEOUT_MS:10000}"
   read-timeout-ms: "${GW_READ_TIMEOUT_MS:30000}"
   # 调用方透传头黑名单前缀（不区分大小写）：凭证/主机/逐跳头一律丢弃
