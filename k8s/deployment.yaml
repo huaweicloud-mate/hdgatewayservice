@@ -1,0 +1,193 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hdgatewayservice
+  namespace: backend
+  labels:
+    app: hdgatewayservice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hdgatewayservice
+  template:
+    metadata:
+      labels:
+        app: hdgatewayservice
+    spec:
+      imagePullSecrets:
+        - name: swr-secret
+      containers:
+        - name: server
+          image: swr.cn-south-1.myhuaweicloud.com/huaweicloud-devkit-prod/hdgatewayservice:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3003
+              protocol: TCP
+          volumeMounts:
+            - name: log-volume
+              mountPath: /opt/cloud/logs/hdgatewayservice
+          env:
+            - name: PORT
+              value: "3003"
+            - name: MYSQL_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: MYSQL_HOST
+            - name: MYSQL_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: MYSQL_PORT
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: MYSQL_PASSWORD
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: MYSQL_DATABASE
+            - name: REDIS_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: REDIS_PORT
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: REDIS_PASSWORD
+                  optional: true
+            - name: DEPLOY_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: DEPLOY_ENV
+                  optional: true
+            # ── 绿区 HIS 凭证（4 头 apigw + IAM），网关持有，蓝区调用方不接触 ──
+            - name: GW_HIS_APPCODE
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_HIS_APPCODE
+                  optional: true
+            - name: GW_HIS_HW_ID
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_HIS_HW_ID
+                  optional: true
+            - name: GW_HIS_APPKEY
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_HIS_APPKEY
+                  optional: true
+            - name: GW_HIS_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_HIS_AUTH_TOKEN
+                  optional: true
+            - name: GW_HIS_IAM_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_HIS_IAM_ENDPOINT
+                  optional: true
+            - name: GW_HIS_IAM_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_HIS_IAM_USERNAME
+                  optional: true
+            - name: GW_HIS_IAM_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_HIS_IAM_PASSWORD
+                  optional: true
+            - name: GW_HIS_IAM_DOMAIN_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_HIS_IAM_DOMAIN_NAME
+                  optional: true
+            # ── 管理面（API Key 签发）──
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: ADMIN_USERNAME
+                  optional: true
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: ADMIN_PASSWORD
+                  optional: true
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: JWT_SECRET
+                  optional: true
+            # ── 路由白名单（route 名固定在 application.yml，url 用环境变量注入实际绿区地址）──
+            - name: GW_ROUTE_HIS_DEMO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_ROUTE_HIS_DEMO_URL
+                  optional: true
+            - name: GW_ROUTE_APIG_DEMO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_ROUTE_APIG_DEMO_URL
+                  optional: true
+            - name: GW_ROUTE_APIG_DEMO_APPCODE
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_ROUTE_APIG_DEMO_APPCODE
+                  optional: true
+            - name: GW_APPCODE
+              valueFrom:
+                secretKeyRef:
+                  name: hdgw-secrets
+                  key: GW_APPCODE
+                  optional: true
+          resources:
+            requests:
+              cpu: 500m
+              memory: 512Mi
+            limits:
+              cpu: 2
+              memory: 2Gi
+          readinessProbe:
+            tcpSocket:
+              port: 3003
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 3003
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: log-volume
+          persistentVolumeClaim:
+            claimName: hdgatewayservice-logs

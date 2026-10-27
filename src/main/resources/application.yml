@@ -1,0 +1,65 @@
+server:
+  port: ${PORT:3003}
+spring:
+  application:
+    name: hdgatewayservice
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:127.0.0.1}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:hdgatewayservice}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: ${REDIS_TIMEOUT:3s}
+
+gateway:
+  # 路由白名单：蓝区调用方只能通过 route 名访问已配置的绿区上游，天然防 SSRF。
+  # url 支持环境变量覆盖；auth 取值：HIS（4 头 apigw + IAM token）/ APPCODE（华为云 APIG 简单认证）/ NONE（直连）
+  routes:
+    - name: his-demo
+      url: "${GW_ROUTE_HIS_DEMO_URL:}"
+      auth: HIS
+      methods: GET,POST
+    - name: apig-demo
+      url: "${GW_ROUTE_APIG_DEMO_URL:}"
+      auth: APPCODE
+      app-code: "${GW_ROUTE_APIG_DEMO_APPCODE:}"
+      methods: GET,POST
+
+hdgateway:
+  his:
+    app-code: "${GW_HIS_APPCODE:}"
+    hw-id: "${GW_HIS_HW_ID:}"
+    app-key: "${GW_HIS_APPKEY:}"
+    # test 环境直接使用静态 token；production 走 IAM 动态获取并缓存
+    auth-token: "${GW_HIS_AUTH_TOKEN:}"
+    iam-endpoint: "${GW_HIS_IAM_ENDPOINT:https://iam.cn-north-4.myhuaweicloud.com/v3/auth/tokens}"
+    iam-username: "${GW_HIS_IAM_USERNAME:}"
+    iam-password: "${GW_HIS_IAM_PASSWORD:}"
+    iam-domain-name: "${GW_HIS_IAM_DOMAIN_NAME:}"
+  # 全局兜底 APPCODE（路由未单独配置 app-code 时使用）
+  app-code: "${GW_APPCODE:}"
+  deploy-env: "${DEPLOY_ENV:production}"
+  log-mask-keys: "${LOG_MASK_KEYS:password,passwd,pwd,secret,token,sk,access_key,private_key,authorization,cookie,credential,appcode,app_code,api_key,apikey}"
+  connect-timeout-ms: "${GW_CONNECT_TIMEOUT_MS:10000}"
+  read-timeout-ms: "${GW_READ_TIMEOUT_MS:30000}"
+  # 调用方透传头黑名单前缀（不区分大小写）：凭证/主机/逐跳头一律丢弃
+  caller-header-deny: "${GW_CALLER_HEADER_DENY:host,content-length,authorization,cookie,connection,transfer-encoding,expect,x-apig,x-hw,x-auth,x-api-key,x-traceid}"
+  auth:
+    admin-username: "${ADMIN_USERNAME:admin}"
+    admin-password: "${ADMIN_PASSWORD:Hdgw@2026}"
+    jwt-secret: "${JWT_SECRET:hdgateway-admin-jwt-secret-key-2026}"
+    jwt-expiration-hours: ${JWT_EXPIRATION_HOURS:24}
+    login-max-username-failures: ${AUTH_LOGIN_MAX_USERNAME_FAILURES:5}
+    login-max-ip-failures: ${AUTH_LOGIN_MAX_IP_FAILURES:30}
+    login-lock-minutes: ${AUTH_LOGIN_LOCK_MINUTES:15}

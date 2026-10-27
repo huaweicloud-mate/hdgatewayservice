@@ -1,0 +1,48 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+gateway:
+  routes:
+    - name: his-demo
+      url: "https://his.example.com"
+      auth: HIS
+      methods: GET,POST
+    - name: apig-demo
+      url: "https://apig.example.com"
+      auth: APPCODE
+      app-code: "route-appcode"
+      methods: GET,POST
+
+hdgateway:
+  his:
+    app-code: "his-appcode"
+    hw-id: "hw-id-test"
+    app-key: "appkey-test"
+    auth-token: "static-token"
+    iam-endpoint: "https://iam.example.com/v3/auth/tokens"
+    iam-username: "u"
+    iam-password: "p"
+    iam-domain-name: "d"
+  app-code: "global-appcode"
+  deploy-env: test
+  log-mask-keys: "password,passwd,pwd,secret,token,sk,access_key,private_key,authorization,cookie,credential,appcode,app_code,api_key,apikey"
+  caller-header-deny: "host,content-length,authorization,cookie,connection,transfer-encoding,expect,x-apig,x-hw,x-auth,x-api-key,x-traceid"
+  auth:
+    admin-username: "admin"
+    admin-password: "test-pass"
+    jwt-secret: "test-jwt-secret-key-0123456789abcdef"
+    jwt-expiration-hours: 24
+    login-max-username-failures: 5
+    login-max-ip-failures: 30
+    login-lock-minutes: 15

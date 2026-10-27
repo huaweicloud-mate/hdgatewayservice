@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_HOME" value="${sys:LOG_HOME:-/opt/cloud/logs/hdgatewayservice}"/>
+        <Property name="DELETE_DAY" value="7d"/>
+        <Property name="LOG_SIZE" value="50MB"/>
+    </Properties>
+
+    <Appenders>
+        <RollingFile name="STDOUT" fileName="${LOG_HOME}/stdout.log"
+                filePattern="${LOG_HOME}/stdout/stdout.%d{yyyy-MM-dd}.%i.gz">
+            <PatternLayout
+                    pattern="%d{yyyy-MM-dd HH:mm:ss SSS}|%-5p|%c{2}.%M:%L|[%t]|%X{traceID}|%enc{%msg}{CRLF}%n%ex"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${LOG_SIZE}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10">
+                <Delete basePath="${LOG_HOME}/stdout" maxDepth="1">
+                    <IfFileName glob="stdout.*.gz"/>
+                    <IfLastModified age="${DELETE_DAY}"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <RollingFile name="RUN_LOG" fileName="${LOG_HOME}/run.log"
+                filePattern="${LOG_HOME}/run/run.%d{yyyy-MM-dd}.%i.gz">
+            <PatternLayout
+                    pattern="%d{yyyy-MM-dd HH:mm:ss SSS}|%-5p|%c{2}.%M:%L|[%t]|%X{traceID}|%enc{%msg}{CRLF}%n%ex"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${LOG_SIZE}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10">
+                <Delete basePath="${LOG_HOME}/run" maxDepth="1">
+                    <IfFileName glob="run.*.gz"/>
+                    <IfLastModified age="${DELETE_DAY}"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <RollingFile name="INTERFACE_LOG" fileName="${LOG_HOME}/interface.log"
+                filePattern="${LOG_HOME}/interface/interface.%d{yyyy-MM-dd}.%i.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss SSS}|%X{traceID}|%enc{%msg}{CRLF}%n%ex"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${LOG_SIZE}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10">
+                <Delete basePath="${LOG_HOME}/interface" maxDepth="1">
+                    <IfFileName glob="interface.*.gz"/>
+                    <IfLastModified age="${DELETE_DAY}"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <RollingFile name="CALL_LOG" fileName="${LOG_HOME}/call.log"
+                filePattern="${LOG_HOME}/call/call.%d{yyyy-MM-dd}.%i.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss SSS}|%X{traceID}|%enc{%msg}{CRLF}%n%ex"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="${LOG_SIZE}"/>
+            </Policies>
+            <DefaultRolloverStrategy max="10">
+                <Delete basePath="${LOG_HOME}/call" maxDepth="1">
+                    <IfFileName glob="call.*.gz"/>
+                    <IfLastModified age="${DELETE_DAY}"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <Async name="RUN_LOG_ASYNC" includeLocation="true">
+            <AppenderRef ref="RUN_LOG"/>
+        </Async>
+
+        <Async name="INTERFACE_LOG_ASYNC" includeLocation="true">
+            <AppenderRef ref="INTERFACE_LOG"/>
+        </Async>
+
+        <Async name="CALL_LOG_ASYNC" includeLocation="true">
+            <AppenderRef ref="CALL_LOG"/>
+        </Async>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="com.huaweicloud" level="INFO" additivity="false">
+            <AppenderRef ref="RUN_LOG_ASYNC"/>
+        </Logger>
+
+        <Logger name="com.huaweicloud.hdgatewayservice.interface" level="INFO" additivity="false">
+            <AppenderRef ref="INTERFACE_LOG_ASYNC"/>
+        </Logger>
+
+        <Logger name="com.huaweicloud.hdgatewayservice.call" level="INFO" additivity="false">
+            <AppenderRef ref="CALL_LOG_ASYNC"/>
+        </Logger>
+
+        <Logger name="org.springframework" level="WARN"/>
+
+        <Logger name="org.hibernate" level="WARN"/>
+
+        <Root level="INFO">
+            <AppenderRef ref="STDOUT"/>
+        </Root>
+    </Loggers>
+</Configuration>

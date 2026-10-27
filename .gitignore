@@ -1,0 +1,16 @@
+target/
+*.class
+*.jar
+*.war
+*.log
+.idea/
+*.iml
+.vscode/
+.DS_Store
+!.mvn/wrapper/maven-wrapper.jar
+logs/
+
+# JVM crash dumps
+hs_err_pid*.mdmp
+hs_err_pid*.log
+replay_pid*.log
