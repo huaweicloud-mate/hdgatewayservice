@@ -38,11 +38,3 @@ hdgateway:
   deploy-env: test
   log-mask-keys: "password,passwd,pwd,secret,token,sk,access_key,private_key,authorization,cookie,credential,appcode,app_code,api_key,apikey"
   caller-header-deny: "host,content-length,authorization,cookie,connection,transfer-encoding,expect,x-apig,x-hw,x-auth,x-api-key,x-traceid"
-  auth:
-    admin-username: "admin"
-    admin-password: "test-pass"
-    jwt-secret: "test-jwt-secret-key-0123456789abcdef"
-    jwt-expiration-hours: 24
-    login-max-username-failures: 5
-    login-max-ip-failures: 30
-    login-lock-minutes: 15

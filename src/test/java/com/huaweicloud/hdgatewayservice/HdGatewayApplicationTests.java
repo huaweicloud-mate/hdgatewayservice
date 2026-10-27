@@ -12,9 +12,6 @@ class HdGatewayApplicationTests {
     @MockBean
     private com.huaweicloud.hdgatewayservice.service.InvokeService invokeService;
 
-    @MockBean
-    private com.huaweicloud.hdgatewayservice.service.LoginAttemptService loginAttemptService;
-
     @Test
     void contextLoads() {
     }

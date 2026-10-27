@@ -98,24 +98,6 @@ spec:
                   name: hdgw-secrets
                   key: GW_ROUTE_APIG_DEMO_APPCODE
                   optional: true
-            - name: ADMIN_USERNAME
-              valueFrom:
-                secretKeyRef:
-                  name: hdgw-secrets
-                  key: ADMIN_USERNAME
-                  optional: true
-            - name: ADMIN_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: hdgw-secrets
-                  key: ADMIN_PASSWORD
-                  optional: true
-            - name: JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: hdgw-secrets
-                  key: JWT_SECRET
-                  optional: true
           resources:
             requests:
               cpu: 250m

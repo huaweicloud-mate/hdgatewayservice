@@ -23,7 +23,7 @@ hdgatewayservice (Spring Boot)
 ## 技术栈
 
 - JDK 21 + Spring Boot 3.3 + Maven（与蓝本一致）
-- Spring Web（RestClient）+ JPA/MySQL（API Key）+ Redis（限流/登录锁定）
+- Spring Web（RestClient）+ JPA/MySQL（API Key，运维直接建表配置）+ Redis（限流）
 - log4j2 文件日志（interface/call/run 三路）+ 敏感信息脱敏（Masker）
 
 ## 对外接口
@@ -81,13 +81,21 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 
 路由在 `application.yml` 的 `gateway.routes` 注册（name 固定、url 用环境变量注入实际绿区地址），新增路由 = 加一条配置。
 
-### 3. 管理面（admin JWT 保护）
+### 3. API Key 配置（数据库直配，无管理接口）
 
-- `POST /auth/login`：`{"username":"admin","password":"..."}` → `{token, username, expiresInHours}`（Redis 登录失败锁定，多 pod 共享计数）
-- `POST /api-keys?source=<调用方名>&routes=<逗号分隔路由名>`：**一个调用方一个 API Key**；同 source 重复创建即轮换（key 替换、旧 key 失效），响应带 `rotated` 标记
-  - `routes` 可选：**key 级路由授权**（如 `routes=his-demo,direct`），该 key 只能 invoke 白名单内的路由，未配置 = 不限
-- `GET /api-keys`：列表
-- `DELETE /api-keys/{id}`：禁用
+本服务**不提供 API Key 管理接口**，由运维直接在 MySQL `api_key` 表配置（JPA `ddl-auto: update` 自动建表，也可手工建）：
+
+```sql
+-- 一个调用方一条记录；allowed_routes 逗号分隔（小写），空串 = 不限（可调所有已注册路由）
+INSERT INTO api_key (api_key, source, allowed_routes, enabled, created_at)
+VALUES ('<32位随机串>', '<调用方标识>', 'his-demo,direct', 1, NOW());
+
+-- 轮换：更新 api_key 值；禁用：enabled=0
+UPDATE api_key SET api_key = '<新随机串>' WHERE source = '<调用方标识>';
+UPDATE api_key SET enabled = 0 WHERE source = '<调用方标识>';
+```
+
+校验规则（`ApiKeyInterceptor`）：`X-Api-Key` 头必须匹配 `enabled=1` 的记录，通过后注入 `source` 与 `allowed_routes` 供限流/key 级路由授权使用。
 
 ### 错误响应
 
@@ -96,7 +104,7 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 | HTTP | 业务码 | 说明 |
 |------|--------|------|
 | 400 | `HDGW_INVALID_REQUEST` | 参数缺失/非法（path 校验失败等） |
-| 401 | `HDGW_UNAUTHORIZED` | X-Api-Key 缺失/无效/已禁用，或管理面 JWT 无效 |
+| 401 | `HDGW_UNAUTHORIZED` | X-Api-Key 缺失/无效/已禁用（数据库 `api_key` 表无匹配） |
 | 404 | `HDGW_ROUTE_NOT_FOUND` | 路由未在白名单注册 |
 | 403 | `HDGW_ROUTE_FORBIDDEN` | 该 API Key 未授权访问此路由（key 级路由授权） |
 | 405 | `HDGW_METHOD_NOT_ALLOWED` | method 不在路由 methods 白名单 |
@@ -109,7 +117,7 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 ### 构建与测试
 
 ```bash
-mvn test       # 56 个单元测试
+mvn test       # 53 个单元测试
 mvn package    # 打包 target/hdgatewayservice-0.0.1.jar
 ```
 
@@ -145,7 +153,6 @@ java -jar target/hdgatewayservice-0.0.1.jar   # 端口 3003
 | `DEPLOY_ENV` | `production` | `test` 时 HIS 走静态 token |
 | `GW_CONNECT_TIMEOUT_MS` / `GW_READ_TIMEOUT_MS` | `10000` / `30000` | 上游超时 |
 | `GW_CALLER_HEADER_DENY` | 见 yml | 调用方透传头黑名单（精确 + 前缀） |
-| `ADMIN_USERNAME` / `ADMIN_PASSWORD` / `JWT_SECRET` | 见 yml | 管理面 |
 
 ## 与蓝本（hdkitservice）的对应关系
 
@@ -153,7 +160,7 @@ java -jar target/hdgatewayservice-0.0.1.jar   # 端口 3003
 |------|------|
 | 绿区 4 头传输 + IAM token 缓存 | 移植自蓝本 `ApigwGateway`（扩展为按 method/path 调用） |
 | SDK-HMAC-SHA256 签名 | 移植自蓝本 `sign/Signer` |
-| API Key 模型/拦截器 | 对齐蓝本 `ApiKey`/`ApiKeyInterceptor`（增加 source 唯一 + 轮换） |
+| API Key 模型/拦截器 | 对齐蓝本 `ApiKey`/`ApiKeyInterceptor`（增加 source 唯一 + allowed_routes 授权，管理改为数据库直配） |
 | 错误模型/全局异常 | 对齐蓝本（`HDGW_*` 错误码族） |
 | 限流/脱敏/日志/CI | 完整复用蓝本实现 |
 
@@ -161,13 +168,13 @@ java -jar target/hdgatewayservice-0.0.1.jar   # 端口 3003
 
 ```
 src/main/java/com/huaweicloud/hdgatewayservice/
-├── controller/        # invoke / api-keys / auth / 全局异常
-├── service/           # InvokeService 编排、JWT、登录锁定
+├── controller/        # invoke / routes / 全局异常
+├── service/           # InvokeService 编排
 ├── transport/         # 绿区传输层（HIS 4 头 / APIG AppCode / 直连）
 ├── sign/              # SDK-HMAC-SHA256（预留）
-├── config/            # 配置、路由白名单注册表、拦截器
+├── config/            # 配置、路由白名单注册表、ApiKey 拦截器
 ├── ratelimit/         # Redis Token Bucket
-├── repository/        # API Key 存储
+├── repository/        # API Key 存储（只读校验）
 ├── model/             # DTO
 └── util/              # 脱敏
 ```

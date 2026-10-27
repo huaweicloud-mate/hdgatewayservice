@@ -52,10 +52,17 @@ kubectl create secret generic hdgw-secrets -n backend \
   --from-literal=GW_ROUTE_HIS_DEMO_URL=<绿区 HIS 上游基址> \
   --from-literal=GW_ROUTE_APIG_DEMO_URL=<华为云 APIG 上游基址> \
   --from-literal=GW_ROUTE_APIG_DEMO_APPCODE=<APIG AppCode> \
-  --from-literal=ADMIN_USERNAME=admin \
-  --from-literal=ADMIN_PASSWORD=<管理密码> \
-  --from-literal=JWT_SECRET=<随机串> \
   --dry-run=client -o yaml | kubectl apply -f -
+```
+
+## 步骤 2.5：配置调用方 API Key（数据库直配）
+
+本服务无 API Key 管理接口，运维直接在 MySQL（`MYSQL_DATABASE` 指定的库）`api_key` 表插入调用方记录（表由 JPA 启动时自动创建）：
+
+```sql
+-- 一个调用方一条记录；allowed_routes 逗号分隔（小写），空串 = 不限
+INSERT INTO api_key (api_key, source, allowed_routes, enabled, created_at)
+VALUES ('<32位随机串>', 'my-internet-app', 'his-demo,direct', 1, NOW());
 ```
 
 ## 步骤 3：部署应用
@@ -97,18 +104,13 @@ Started HdGatewayApplication           # 应用启动完成
 ```bash
 kubectl port-forward -n backend svc/hdgatewayservice-svc 3003:3003 &
 
-# 1) 管理面登录换 JWT
-curl -s -X POST http://127.0.0.1:3003/rest/developer/server/hdgatewayservice/auth/login \
-  -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"<管理密码>"}'
+# 1) 查看路由白名单
+curl -s http://127.0.0.1:3003/rest/developer/server/hdgatewayservice/routes \
+  -H 'X-Api-Key: <api_key 表中的 key>'
 
-# 2) 给调用方签发 API Key（一个调用方一个）
-curl -s -X POST "http://127.0.0.1:3003/rest/developer/server/hdgatewayservice/api-keys?source=my-internet-app" \
-  -H 'Authorization: Bearer <JWT>'
-
-# 3) 蓝区调用方经网关 invoke 绿区接口
+# 2) 蓝区调用方经网关 invoke 绿区接口
 curl -s -X POST http://127.0.0.1:3003/rest/developer/server/hdgatewayservice/invoke \
-  -H 'Content-Type: application/json' -H 'X-Api-Key: <API Key>' \
+  -H 'Content-Type: application/json' -H 'X-Api-Key: <api_key 表中的 key>' \
   -d '{"route":"his-demo","path":"/v1/check","method":"POST","body":{"customer_id":"<domainId>"}}'
 ```
 

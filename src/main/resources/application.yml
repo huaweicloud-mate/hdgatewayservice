@@ -55,11 +55,3 @@ hdgateway:
   read-timeout-ms: "${GW_READ_TIMEOUT_MS:30000}"
   # 调用方透传头黑名单前缀（不区分大小写）：凭证/主机/逐跳头一律丢弃
   caller-header-deny: "${GW_CALLER_HEADER_DENY:host,content-length,authorization,cookie,connection,transfer-encoding,expect,x-apig,x-hw,x-auth,x-api-key,x-traceid}"
-  auth:
-    admin-username: "${ADMIN_USERNAME:admin}"
-    admin-password: "${ADMIN_PASSWORD:Hdgw@2026}"
-    jwt-secret: "${JWT_SECRET:hdgateway-admin-jwt-secret-key-2026}"
-    jwt-expiration-hours: ${JWT_EXPIRATION_HOURS:24}
-    login-max-username-failures: ${AUTH_LOGIN_MAX_USERNAME_FAILURES:5}
-    login-max-ip-failures: ${AUTH_LOGIN_MAX_IP_FAILURES:30}
-    login-lock-minutes: ${AUTH_LOGIN_LOCK_MINUTES:15}
