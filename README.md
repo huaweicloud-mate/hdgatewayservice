@@ -106,7 +106,30 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 
 > 这 5 条均为**固定路由**：url 注入完整接口地址，invoke 时 `path` 省略。后续接入新绿区接口 = 加一条路由配置。
 
-### 3. API Key 配置（数据库直配，无管理接口）
+### 3. 协议场景接口（X-Api-Key 鉴权）
+
+蓝本式编排：查询 → 过滤未签/旧版（`sign_status != 1`）→ 签署最新版。
+
+**`POST /agreement/query`** —— 查询协议签署状态（封装 `query_sign_info_list` 组装），透传上游 `sign_info_list`：
+
+```json
+{ "developerId": "2d7f01301d1a4138893fd10bbbe54aab", "agrTypes": [90103], "country": "cn" }
+```
+
+**`POST /agreement/sign`** —— 签署协议（幂等：已签最新版自动跳过，`signedCount=0`）：
+
+```json
+{ "developerId": "...", "agrTypes": [90103], "country": "cn", "language": "zh_cn" }
+```
+
+```json
+{ "signed": true, "signedCount": 0,
+  "results": [{ "agrType": 90103, "signStatus": 1, "latestVersion": 2025112029, "signed": true }] }
+```
+
+`country` 默认 `cn`，`language` 默认 `zh_cn`。
+
+### 4. API Key 配置（数据库直配，无管理接口）
 
 本服务**不提供 API Key 管理接口**，由运维直接在 MySQL `api_key` 表配置（JPA `ddl-auto: update` 自动建表，也可手工建）：
 
