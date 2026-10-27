@@ -1,0 +1,23 @@
+spring:
+  datasource:
+    # 本地 profile：H2 内存库，免装 MySQL；Redis 缺失时限流 fail-open 放行
+    url: jdbc:h2:mem:hdgw-local;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+
+hdgateway:
+  # 配置文件直配调用方 API Key（校验优先于数据库）；routes 空 = 不限
+  static-api-keys:
+    - name: local-test
+      key: "gwkey-local-0123456789abcdef"
+      routes: ""
+  # 占位符链：本地也可用 DEPLOY_ENV 环境变量切换 token 策略（production=IAM 动态）
+  deploy-env: "${DEPLOY_ENV:production}"
