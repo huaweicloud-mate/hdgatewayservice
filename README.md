@@ -99,7 +99,7 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 |----------|------------------------|------|--------|
 | `coupon-check` | 激励金查券 `INCENTIVE_CHECK_URL` | HIS（4头+IAM） | POST |
 | `coupon-issue` | 激励金发券 `INCENTIVE_ISSUE_URL`（v2） | HIS（4头+IAM） | POST |
-| `competition-signup` | 竞赛报名 `COMPETITION_SIGNUP_URL` | HIS（4头+IAM） | POST |
+| `competition-signup-query` | 竞赛报名状态查询 | HIS（4头+IAM） | POST |
 | `agreement-query` | 协议查询 `agreementservice/developer/agreement/query` | APIG（x-auth-token） | GET,POST |
 | `agreement-sign` | 协议签署 `agreementservice/developer/agreement/sign` | APIG（x-auth-token） | POST |
 | `realname-developer-info` | 实名信息 `hdaccountservice/realname/get-developer-info` | APIG（x-auth-token） | GET,POST |

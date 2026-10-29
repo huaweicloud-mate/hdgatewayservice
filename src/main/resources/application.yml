@@ -36,8 +36,8 @@ gateway:
       url: "${GW_ROUTE_COUPON_ISSUE_URL:}"
       auth: HIS
       methods: POST
-    - name: competition-signup
-      url: "${GW_ROUTE_COMPETITION_SIGNUP_URL:}"
+    - name: competition-signup-query
+      url: "${GW_ROUTE_COMPETITION_SIGNUP_QUERY_URL:}"
       auth: HIS
       methods: POST
     - name: agreement-query
