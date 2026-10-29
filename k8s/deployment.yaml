@@ -1,4 +1,4 @@
-﻿apiVersion: apps/v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hdgatewayservice
@@ -77,7 +77,7 @@ spec:
                   name: hdgw-secrets
                   key: DEPLOY_ENV
                   optional: true
-            # 鈹€鈹€ 缁垮尯 HIS 鍑瘉锛? 澶?apigw + IAM锛夛紝缃戝叧鎸佹湁锛岃摑鍖鸿皟鐢ㄦ柟涓嶆帴瑙?鈹€鈹€
+            # ── 绿区 HIS 凭证（4 头 apigw + IAM），网关持有，蓝区调用方不接触 ──
             - name: GW_HIS_APPCODE
               valueFrom:
                 secretKeyRef:
@@ -126,24 +126,24 @@ spec:
                   name: hdgw-secrets
                   key: GW_HIS_IAM_DOMAIN_NAME
                   optional: true
-            # 鈹€鈹€ 璺敱鐧藉悕鍗曪紙route 鍚嶅浐瀹氬湪 application.yml锛寀rl 鐢ㄧ幆澧冨彉閲忔敞鍏ュ疄闄呯豢鍖哄湴鍧€锛夆攢鈹€
-            - name: GW_ROUTE_HDINCENTIVESERVICE_COUPON_CHECK_URL
+            # ── 路由白名单（route 名固定在 application.yml，url 用环境变量注入实际绿区地址）──
+            - name: GW_ROUTE_COUPON_CHECK_URL
               valueFrom:
                 secretKeyRef:
                   name: hdgw-secrets
-                  key: GW_ROUTE_HDINCENTIVESERVICE_COUPON_CHECK_URL
+                  key: GW_ROUTE_COUPON_CHECK_URL
                   optional: true
-            - name: GW_ROUTE_HDINCENTIVESERVICE_COUPON_ISSUE_URL
+            - name: GW_ROUTE_COUPON_ISSUE_URL
               valueFrom:
                 secretKeyRef:
                   name: hdgw-secrets
-                  key: GW_ROUTE_HDINCENTIVESERVICE_COUPON_ISSUE_URL
+                  key: GW_ROUTE_COUPON_ISSUE_URL
                   optional: true
-            - name: GW_ROUTE_COMPETITION_SIGNUP_QUERY_URL
+            - name: GW_ROUTE_COMPETITION_SIGNUP_URL
               valueFrom:
                 secretKeyRef:
                   name: hdgw-secrets
-                  key: GW_ROUTE_COMPETITION_SIGNUP_QUERY_URL
+                  key: GW_ROUTE_COMPETITION_SIGNUP_URL
                   optional: true
             - name: GW_APPCODE
               valueFrom:

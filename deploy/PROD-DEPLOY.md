@@ -49,11 +49,11 @@ kubectl create secret generic hdgw-secrets -n backend \
   --from-literal=GW_HIS_IAM_USERNAME=<IAM 用户名> \
   --from-literal=GW_HIS_IAM_PASSWORD=<IAM 密码> \
   --from-literal=GW_HIS_IAM_DOMAIN_NAME=<IAM 域名> \
-  --from-literal=GW_ROUTE_COMPETITION_SIGNUP_QUERY_URL=<绿区竞赛报名状态查询完整地址> \
+  --from-literal=GW_ROUTE_HIS_DEMO_URL=<绿区 HIS 上游基址> \
+  --from-literal=GW_ROUTE_APIG_DEMO_URL=<华为云 APIG 上游基址> \
+  --from-literal=GW_ROUTE_APIG_DEMO_APPCODE=<APIG AppCode> \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
-
-> 路由 URL 说明：`hdincentiveservice-coupon-check` / `hdincentiveservice-coupon-issue` / `hdasdevservice-agreement-query` / `hdasdevservice-agreement-sign` / `hdaccountservice-realname-developer-info` 已内置默认地址（见 application.yml），无需配置；仅 `competition-signup-query` 必须注入。
 
 ## 步骤 2.5：配置调用方 API Key（数据库直配）
 

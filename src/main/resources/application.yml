@@ -28,32 +28,28 @@ gateway:
   # auth 取值：HIS（4 头 apigw + IAM token）/ APPCODE（华为云 APIG 简单认证）/ NONE（直连）
   # 以下 5 条对应 hdkitservice 已在调用的绿区接口，url 由部署环境注入实际值
   routes:
-    # ── 激励服务（hdincentiveservice）──
-    - name: hdincentiveservice-coupon-check
-      url: "${GW_ROUTE_HDINCENTIVESERVICE_COUPON_CHECK_URL:https://apigw-dgg-b0.huawei.com/api/v1/hdincentiveservice/coupon/check-coupon-issued}"
+    - name: coupon-check
+      url: "${GW_ROUTE_COUPON_CHECK_URL:}"
       auth: HIS
       methods: POST
-    - name: hdincentiveservice-coupon-issue
-      url: "${GW_ROUTE_HDINCENTIVESERVICE_COUPON_ISSUE_URL:https://apigw-dgg-b0.huawei.com/api/v2/hdincentiveservice/coupon/issue-coupon}"
+    - name: coupon-issue
+      url: "${GW_ROUTE_COUPON_ISSUE_URL:}"
       auth: HIS
       methods: POST
-    # ── 竞赛服务 ──
-    - name: competition-signup-query
-      url: "${GW_ROUTE_COMPETITION_SIGNUP_QUERY_URL:}"
+    - name: competition-signup
+      url: "${GW_ROUTE_COMPETITION_SIGNUP_URL:}"
       auth: HIS
       methods: POST
-    # ── 协议服务（hdasdevservice）──
-    - name: hdasdevservice-agreement-query
-      url: "${GW_ROUTE_HDASDEVSERVICE_AGREEMENT_QUERY_URL:https://developer.myhuaweicloud.com/v1/agreementservice/developer/agreement/query}"
+    - name: agreement-query
+      url: "${GW_ROUTE_AGREEMENT_QUERY_URL:https://developer.myhuaweicloud.com/v1/agreementservice/developer/agreement/query}"
       auth: APIG
       methods: GET,POST
-    - name: hdasdevservice-agreement-sign
-      url: "${GW_ROUTE_HDASDEVSERVICE_AGREEMENT_SIGN_URL:https://developer.myhuaweicloud.com/v1/agreementservice/developer/agreement/sign}"
+    - name: agreement-sign
+      url: "${GW_ROUTE_AGREEMENT_SIGN_URL:https://developer.myhuaweicloud.com/v1/agreementservice/developer/agreement/sign}"
       auth: APIG
       methods: POST
-    # ── 账号服务（hdaccountservice）──
-    - name: hdaccountservice-realname-developer-info
-      url: "${GW_ROUTE_HDACCOUNTSERVICE_REALNAME_DEVELOPER_INFO_URL:https://developer.myhuaweicloud.com/v1/hdaccountservice/realname/get-developer-info}"
+    - name: realname-developer-info
+      url: "${GW_ROUTE_REALNAME_DEVELOPER_INFO_URL:https://developer.myhuaweicloud.com/v1/hdaccountservice/realname/get-developer-info}"
       auth: APIG
       methods: GET,POST
   # 注：codearts-package / officeace-subscription 不纳入网关——二者是"验证调用方本人"接口，
