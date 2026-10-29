@@ -98,18 +98,6 @@ spec:
                   name: hdgw-secrets
                   key: GW_ROUTE_COMPETITION_SIGNUP_URL
                   optional: true
-            - name: GW_ROUTE_CODEARTS_PACKAGE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: hdgw-secrets
-                  key: GW_ROUTE_CODEARTS_PACKAGE_URL
-                  optional: true
-            - name: GW_ROUTE_OFFICEACE_SUBSCRIPTION_URL
-              valueFrom:
-                secretKeyRef:
-                  name: hdgw-secrets
-                  key: GW_ROUTE_OFFICEACE_SUBSCRIPTION_URL
-                  optional: true
           resources:
             requests:
               cpu: 250m

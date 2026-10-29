@@ -98,11 +98,13 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 | 网关路由 | 对应 hdkitservice 调用 | 认证 | method |
 |----------|------------------------|------|--------|
 | `coupon-check` | 激励金查券 `INCENTIVE_CHECK_URL` | HIS（4头+IAM） | POST |
-| `coupon-issue` | 激励金发券 `INCENTIVE_ISSUE_URL` | HIS（4头+IAM） | POST |
+| `coupon-issue` | 激励金发券 `INCENTIVE_ISSUE_URL`（v2） | HIS（4头+IAM） | POST |
 | `competition-signup` | 竞赛报名 `COMPETITION_SIGNUP_URL` | HIS（4头+IAM） | POST |
 | `agreement-query` | 协议查询 `agreementservice/developer/agreement/query` | APIG（x-auth-token） | GET,POST |
-| `codearts-package` | 码道套餐 `CODEARTS_PACKAGE_URL` | 直连 | GET |
-| `officeace-subscription` | 果办订阅 `OFFICEACE_SUBSCRIPTION_URL` | 直连 | GET |
+| `agreement-sign` | 协议签署 `agreementservice/developer/agreement/sign` | APIG（x-auth-token） | POST |
+| `realname-developer-info` | 实名信息 `hdaccountservice/realname/get-developer-info` | APIG（x-auth-token） | GET,POST |
+
+> 码道（codearts）/果办（officeace）校验接口**不纳入网关**：需用调用方本人 AK/SK 做 SDK-HMAC-SHA256 签名且 URL 含动态路径，与网关凭证模型冲突，保留在 hdkitservice。
 
 > 这 5 条均为**固定路由**：url 注入完整接口地址，invoke 时 `path` 省略。后续接入新绿区接口 = 加一条路由配置。
 

@@ -18,10 +18,6 @@ gateway:
       url: "https://his.example.com/coupon/check"
       auth: HIS
       methods: POST
-    - name: codearts-package
-      url: "https://direct.example.com/codearts/package"
-      auth: NONE
-      methods: GET
 
 hdgateway:
   his:

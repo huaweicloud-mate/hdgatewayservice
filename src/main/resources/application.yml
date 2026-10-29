@@ -52,14 +52,8 @@ gateway:
       url: "${GW_ROUTE_REALNAME_DEVELOPER_INFO_URL:https://developer.myhuaweicloud.com/v1/hdaccountservice/realname/get-developer-info}"
       auth: APIG
       methods: GET,POST
-    - name: codearts-package
-      url: "${GW_ROUTE_CODEARTS_PACKAGE_URL:}"
-      auth: NONE
-      methods: GET
-    - name: officeace-subscription
-      url: "${GW_ROUTE_OFFICEACE_SUBSCRIPTION_URL:}"
-      auth: NONE
-      methods: GET
+  # 注：codearts-package / officeace-subscription 不纳入网关——二者是"验证调用方本人"接口，
+  # 需用调用方自己的 AK/SK 做 SDK-HMAC-SHA256 签名（URL 还是 base+动态路径），与网关凭证模型冲突，保留在 hdkitservice
 
 hdgateway:
   his:
