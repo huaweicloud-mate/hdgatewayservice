@@ -25,8 +25,8 @@ public class AgreementService {
 
     private static final Logger log = LoggerFactory.getLogger(AgreementService.class);
 
-    public static final String ROUTE_QUERY = "agreement-query";
-    public static final String ROUTE_SIGN = "agreement-sign";
+    public static final String ROUTE_QUERY = "hdasdevservice-agreement-query";
+    public static final String ROUTE_SIGN = "hdasdevservice-agreement-sign";
 
     private final RouteRegistry registry;
     private final ApigTransport apigTransport;

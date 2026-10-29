@@ -14,7 +14,7 @@ spring:
 
 gateway:
   routes:
-    - name: coupon-check
+    - name: hdincentiveservice-coupon-check
       url: "https://his.example.com/coupon/check"
       auth: HIS
       methods: POST

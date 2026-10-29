@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+﻿apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: hdgatewayservice
@@ -19,7 +19,7 @@ spec:
         - name: swr-secret
       containers:
         - name: server
-          # TODO: 替换为测试 SWR 镜像地址:tag
+          # TODO: 鏇挎崲涓烘祴璇?SWR 闀滃儚鍦板潃:tag
           image: swr.cn-south-1.myhuaweicloud.com/<test-org>/hdgatewayservice:latest
           imagePullPolicy: Always
           ports:
@@ -80,23 +80,23 @@ spec:
                   name: hdgw-secrets
                   key: GW_HIS_AUTH_TOKEN
                   optional: true
-            - name: GW_ROUTE_COUPON_CHECK_URL
+            - name: GW_ROUTE_HDINCENTIVESERVICE_COUPON_CHECK_URL
               valueFrom:
                 secretKeyRef:
                   name: hdgw-secrets
-                  key: GW_ROUTE_COUPON_CHECK_URL
+                  key: GW_ROUTE_HDINCENTIVESERVICE_COUPON_CHECK_URL
                   optional: true
-            - name: GW_ROUTE_COUPON_ISSUE_URL
+            - name: GW_ROUTE_HDINCENTIVESERVICE_COUPON_ISSUE_URL
               valueFrom:
                 secretKeyRef:
                   name: hdgw-secrets
-                  key: GW_ROUTE_COUPON_ISSUE_URL
+                  key: GW_ROUTE_HDINCENTIVESERVICE_COUPON_ISSUE_URL
                   optional: true
-            - name: GW_ROUTE_COMPETITION_SIGNUP_URL
+            - name: GW_ROUTE_COMPETITION_SIGNUP_QUERY_URL
               valueFrom:
                 secretKeyRef:
                   name: hdgw-secrets
-                  key: GW_ROUTE_COMPETITION_SIGNUP_URL
+                  key: GW_ROUTE_COMPETITION_SIGNUP_QUERY_URL
                   optional: true
           resources:
             requests:

@@ -38,7 +38,7 @@ hdgatewayservice (Spring Boot)
 curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke \
   -H 'Content-Type: application/json' -H 'X-Api-Key: <API Key>' \
   -d '{
-    "route": "coupon-check",
+    "route": "hdincentiveservice-coupon-check",
     "body": {"customer_id": "<domainId>"}
   }'
 ```
@@ -79,7 +79,7 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 
 ```json
 [
-  { "name": "coupon-check", "auth": "HIS", "methods": ["POST"], "configured": true },
+  { "name": "hdincentiveservice-coupon-check", "auth": "HIS", "methods": ["POST"], "configured": true },
   { "name": "codearts-package", "auth": "NONE", "methods": ["GET"], "configured": true }
 ]
 ```
@@ -97,12 +97,16 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 
 | 网关路由 | 对应 hdkitservice 调用 | 认证 | method |
 |----------|------------------------|------|--------|
-| `coupon-check` | 激励金查券 `INCENTIVE_CHECK_URL` | HIS（4头+IAM） | POST |
-| `coupon-issue` | 激励金发券 `INCENTIVE_ISSUE_URL`（v2） | HIS（4头+IAM） | POST |
-| `competition-signup` | 竞赛报名 `COMPETITION_SIGNUP_URL` | HIS（4头+IAM） | POST |
-| `agreement-query` | 协议查询 `agreementservice/developer/agreement/query` | APIG（x-auth-token） | GET,POST |
-| `agreement-sign` | 协议签署 `agreementservice/developer/agreement/sign` | APIG（x-auth-token） | POST |
-| `realname-developer-info` | 实名信息 `hdaccountservice/realname/get-developer-info` | APIG（x-auth-token） | GET,POST |
+| 路由名（`hdincentiveservice-coupon-check` 等） | 上游 | 认证 | method |
+|------|------|------|--------|
+| `hdincentiveservice-coupon-check` | 激励金查券 | HIS（4头+IAM） | POST |
+| `hdincentiveservice-coupon-issue` | 激励金发券（v2） | HIS（4头+IAM） | POST |
+| `competition-signup-query` | 竞赛报名状态查询 | HIS（4头+IAM） | POST |
+| `hdasdevservice-agreement-query` | 协议查询 | APIG（x-auth-token） | GET,POST |
+| `hdasdevservice-agreement-sign` | 协议签署 | APIG（x-auth-token） | POST |
+| `hdaccountservice-realname-developer-info` | 实名信息查询 | APIG（x-auth-token） | GET,POST |
+
+命名规范：`{上游服务名}-{接口动作}`，环境变量键为 `GW_ROUTE_{大写路由名}_URL`。
 
 > 码道（codearts）/果办（officeace）校验接口**不纳入网关**：需用调用方本人 AK/SK 做 SDK-HMAC-SHA256 签名且 URL 含动态路径，与网关凭证模型冲突，保留在 hdkitservice。
 
@@ -177,11 +181,8 @@ mvn package    # 打包 target/hdgatewayservice-0.0.1.jar
 export MYSQL_HOST=127.0.0.1 MYSQL_DATABASE=hdgatewayservice MYSQL_USER=root MYSQL_PASSWORD=<pwd>
 export REDIS_HOST=127.0.0.1 DEPLOY_ENV=test
 export GW_HIS_APPCODE=<绿区 AppCode> GW_HIS_HW_ID=<HW-ID> GW_HIS_APPKEY=<APPKEY> GW_HIS_AUTH_TOKEN=<token>
-export GW_ROUTE_COUPON_CHECK_URL=https://<绿区激励金查券完整地址>
-export GW_ROUTE_COUPON_ISSUE_URL=https://<绿区激励金发券完整地址>
-export GW_ROUTE_COMPETITION_SIGNUP_URL=https://<绿区竞赛报名完整地址>
-export GW_ROUTE_CODEARTS_PACKAGE_URL=https://<码道套餐查询完整地址>
-export GW_ROUTE_OFFICEACE_SUBSCRIPTION_URL=https://<果办订阅查询完整地址>
+# 路由 URL：check/issue/agreement/realname 已内置默认值，仅竞赛报名状态查询需注入
+export GW_ROUTE_COMPETITION_SIGNUP_QUERY_URL=https://<绿区竞赛报名状态查询完整地址>
 
 java -jar target/hdgatewayservice-0.0.1.jar   # 端口 3003
 ```
@@ -201,8 +202,7 @@ java -jar target/hdgatewayservice-0.0.1.jar   # 端口 3003
 | `GW_HIS_AUTH_TOKEN` | 空 | test 环境 HIS 静态 token |
 | `GW_HIS_IAM_ENDPOINT/USERNAME/PASSWORD/DOMAIN_NAME` | 空 | production 下 IAM 动态取 token |
 | `GW_APPCODE` | 空 | APPCODE 路由全局兜底 AppCode |
-| `GW_ROUTE_<NAME>_URL` | 空 | 路由上游基址（环境变量注入） |
-| `GW_ROUTE_<NAME>_APP_CODE` | 空 | 路由级 AppCode |
+| `GW_ROUTE_<NAME>_URL` | 见 yml | 路由上游地址（check/issue/agreement/realname 已内置默认，可覆盖） |
 | `DEPLOY_ENV` | `production` | `test` 时 HIS 走静态 token |
 | `GW_CONNECT_TIMEOUT_MS` / `GW_READ_TIMEOUT_MS` | `10000` / `30000` | 上游超时 |
 | `GW_CALLER_HEADER_DENY` | 见 yml | 调用方透传头黑名单（精确 + 前缀） |
