@@ -105,7 +105,7 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 | `realname-developer-info` | 实名信息 `hdaccountservice/realname/get-developer-info` | APIG（x-auth-token） | GET,POST |
 | `hdgrowservice-get-order-list` | 成长服务订单列表 `hdgrowthservice/growth/get-order-list` | APIG（x-auth-token） | GET,POST |
 | `hdgrowservice-get-user-list` | 成长服务用户列表 `hdgrowthservice/growth/get-user-list` | APIG（x-auth-token） | GET,POST |
-| `hdaccountservice-same-identity` | 同身份查询 `hdaccountservice/v1/same-identity-by-userid`（集群内 `hdaccountservice:8080`） | NONE（直连，无绿区凭证） | POST |
+| `hdaccountservice-same-identity` | 同身份查询 `hdaccountservice/v1/same-identity-by-userid`（集群内地址由 `GW_ROUTE_HDACCOUNTSERVICE_SAME_IDENTITY_URL` 注入） | NONE（直连，无绿区凭证） | POST |
 
 > 码道（codearts）/果办（officeace）校验接口**不纳入网关**：需用调用方本人 AK/SK 做 SDK-HMAC-SHA256 签名且 URL 含动态路径，与网关凭证模型冲突，保留在 hdkitservice。
 

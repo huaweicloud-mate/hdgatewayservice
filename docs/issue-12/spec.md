@@ -5,7 +5,7 @@
 
 ## 目标
 
-在 `src/main/resources/application.yml` 的 `gateway.routes` 注册一条固定路由 `hdaccountservice-same-identity`，使蓝区应用可用 `POST` 经网关转发到集群内蓝区 `hdaccountservice:8080` 的 `same-identity-by-userid` 接口。
+在 `src/main/resources/application.yml` 的 `gateway.routes` 注册一条固定路由 `hdaccountservice-same-identity`，使蓝区应用可用 `POST` 经网关转发到集群内蓝区服务的 `same-identity-by-userid` 接口（上游地址由环境变量注入，真实值不入仓库）。
 
 ## 范围
 
