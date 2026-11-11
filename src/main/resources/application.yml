@@ -60,6 +60,11 @@ gateway:
       url: "${GW_ROUTE_HDGROWSERVICE_GET_USER_LIST_URL:https://hdportal.cn-north-4.myhuaweicloud.com/v1/hdgrowthservice/growth/get-user-list}"
       auth: APIG
       methods: GET,POST
+    # 集群内蓝区服务直连：auth 必须 NONE（配 APIG 会注入过期绿区 token → 401 APIGW.0307）
+    - name: hdaccountservice-same-identity
+      url: "${GW_ROUTE_HDACCOUNTSERVICE_SAME_IDENTITY_URL:}"
+      auth: NONE
+      methods: POST
   # 注：codearts-package / officeace-subscription 不纳入网关——二者是"验证调用方本人"接口，
   # 需用调用方自己的 AK/SK 做 SDK-HMAC-SHA256 签名（URL 还是 base+动态路径），与网关凭证模型冲突，保留在 hdkitservice
 
