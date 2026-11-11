@@ -18,7 +18,7 @@ application.yml gateway.routes
 
 | 文件 | 改动 | 说明 |
 |---|---|---|
-| `src/main/resources/application.yml` | +4 行 | `gateway.routes` 末尾追加 `hdaccountservice-same-identity` |
+| `src/main/resources/application.yml` | +5 行 | `gateway.routes` 末尾追加 `hdaccountservice-same-identity`（`application.yml:63` 注释行 1 行 + 路由定义 4 行） |
 | `k8s/deployment.yaml` | +6 行 | prod：`GW_ROUTE_HDACCOUNTSERVICE_SAME_IDENTITY_URL` ← secret `hdgw-secrets`（`optional: true`） |
 | `k8s/test/deployment.yaml` | +6 行 | test：同上 |
 | `deploy/PROD-DEPLOY.md` | +1 行 | secret 键清单补 `GW_ROUTE_HDACCOUNTSERVICE_SAME_IDENTITY_URL` |
@@ -37,7 +37,7 @@ application.yml gateway.routes
 |---|---|
 | `auth` 误配为 `APIG` → 401 APIGW.0307 | 单测硬断言 `auth=NONE`，评审可拦截 |
 | `methods` 被放宽为 `GET,POST` | 单测断言 `methodsOf=[POST]` |
-| 内部集群地址硬编码进仓库 | 单测断言 url 为空默认值的环境变量占位符 |
+| 内部集群地址硬编码进仓库 | `application.yml` 与文档均只写占位符（`url` 空默认值 + `<集群内 hdaccountservice 上游地址>`），真实值只留在 secret/部署环境 |
 | 环境变量未注入 → `HDGW_ROUTE_NOT_CONFIGURED` | k8s 清单已注入键；`deploy/PROD-DEPLOY.md` 记录 secret 键 |
 | 调用方 `allowed_routes` 非空缺本路由 → 403 | 部署说明与 Issue 评论提示运维追加（数据侧，不在代码内） |
 
@@ -45,7 +45,8 @@ application.yml gateway.routes
 
 ```bash
 curl -s -X POST http://<host>/rest/developer/server/hdgatewayservice/invoke \
-  -H "X-Api-Key: <key>" -H "Content-Type: application/json" \
+  -H "X-Api-Key: <调用方 API Key>" \
+  -H "Content-Type: application/json" \
   -d '{"route":"hdaccountservice-same-identity","body":{...}}'
 ```
 
