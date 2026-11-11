@@ -52,7 +52,7 @@ kubectl create secret generic hdgw-secrets -n backend \
   --from-literal=GW_ROUTE_HIS_DEMO_URL=<绿区 HIS 上游基址> \
   --from-literal=GW_ROUTE_APIG_DEMO_URL=<华为云 APIG 上游基址> \
   --from-literal=GW_ROUTE_APIG_DEMO_APPCODE=<APIG AppCode> \
-  --from-literal=GW_ROUTE_HDACCOUNTSERVICE_SAME_IDENTITY_URL=http://hdaccountservice:8080/rest/developer/hdaccountservice/v1/same-identity-by-userid \
+  --from-literal=GW_ROUTE_HDACCOUNTSERVICE_SAME_IDENTITY_URL=<集群内 hdaccountservice 上游地址> \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
 
