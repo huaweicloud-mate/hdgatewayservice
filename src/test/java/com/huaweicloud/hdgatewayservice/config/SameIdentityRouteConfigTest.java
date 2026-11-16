@@ -18,13 +18,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * application.yml 路由配置契约测试：以配置绑定 seam（{@link GatewayRoutesProperties}）直接校验
- * hdaccountservice-same-identity 路由，防止 auth 误配为 APIG（会注入过期绿区 token → 401 APIGW.0307）、
- * methods 被放宽、上游地址被硬编码等回归。
+ * hdaccountservice-same-identity 路由，防止 methods 被放宽、上游地址被硬编码等回归。
+ * 上游为绿区实名服务（hddprm.cn-north-4），auth 必须 APIG（x-auth-token 由网关 IAM 动态获取）。
  */
 class SameIdentityRouteConfigTest {
 
     private static final String ROUTE_NAME = "hdaccountservice-same-identity";
     private static final String URL_ENV_KEY = "GW_ROUTE_HDACCOUNTSERVICE_SAME_IDENTITY_URL";
+    private static final String DEFAULT_URL =
+            "https://hddprm.cn-north-4.myhuaweicloud.com/v1/hdaccountservice/realname/same-identity-by-userid";
 
     private GatewayRoutesProperties routesFromApplicationYml() throws IOException {
         List<PropertySource<?>> sources = new YamlPropertySourceLoader()
@@ -44,9 +46,9 @@ class SameIdentityRouteConfigTest {
     }
 
     @Test
-    void registeredWithNoneAuth() throws IOException {
-        // 上游是集群内蓝区服务：auth 必须 NONE，配成 APIG 会注入过期绿区 token → 401 APIGW.0307
-        assertEquals(RouteRegistry.AUTH_NONE, RouteRegistry.authOf(sameIdentityRoute()));
+    void registeredWithApigAuth() throws IOException {
+        // 上游为绿区实名服务（hddprm.cn-north-4）：auth 必须 APIG（x-auth-token 由网关 IAM 动态获取）
+        assertEquals(RouteRegistry.AUTH_APIG, RouteRegistry.authOf(sameIdentityRoute()));
     }
 
     @Test
@@ -56,8 +58,8 @@ class SameIdentityRouteConfigTest {
     }
 
     @Test
-    void urlInjectedFromEnvVarWithEmptyDefault() throws IOException {
-        // 集群内上游地址由部署环境注入，不允许把内部地址写进仓库配置
-        assertEquals("${" + URL_ENV_KEY + ":}", sameIdentityRoute().url());
+    void urlInjectedFromEnvVarWithApiGDefault() throws IOException {
+        // 上游为绿区实名服务地址，默认值内置仓库配置；部署环境可用同名环境变量覆盖
+        assertEquals("${" + URL_ENV_KEY + ":" + DEFAULT_URL + "}", sameIdentityRoute().url());
     }
 }
