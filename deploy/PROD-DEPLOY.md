@@ -125,3 +125,26 @@ curl -s -X POST http://127.0.0.1:3003/rest/developer/server/hdgatewayservice/inv
 | invoke 返回 `HDGW_ROUTE_NOT_CONFIGURED` | 对应路由 URL 未注入（hdgw-secrets 缺键），重跑步骤 2 |
 | invoke 返回 `HDGW_UPSTREAM_ERROR: 获取 IAM Token 失败` | 检查 `GW_HIS_IAM_*` 四项配置与 IAM 账号有效性 |
 | invoke 返回 `HDGW_UNAUTHORIZED` | API Key 不存在/已禁用/已轮换，重新签发或核对 |
+| invoke 返回 `400 HDGW_INVALID_REQUEST`，message 含 `JSON parse error` / `double-quote` | 调用方请求体不是合法 JSON（常见于 Windows PowerShell 下 `curl.exe` 剥掉内嵌双引号，形成 `{route:xxx}` 裸键报文），非网关/上游故障；按下方「请求体 JSON 语法」小节改用带双引号或文件方式提交 |
+
+### 请求体 JSON 语法（Windows PowerShell `curl.exe` 引号剥离）
+
+PowerShell 传给 `curl.exe` 的参数会先被 PowerShell 解析，内嵌双引号被剥掉，`-d '{"route":"..."}'` 实际到达网关可能是 `{route:...}` 裸键报文，网关因 JSON 解析失败返回 `400 HDGW_INVALID_REQUEST`（message 含 `was expecting double-quote to start field name`）。
+
+排查要点：`400 + message 含 JSON 解析原因` 表示请求体在网关自身解析失败（毫秒级返回、未到上游），**不是上游/实例/路由配置问题**。
+
+推荐写法（把请求体放进文件，避免 shell 引号处理）：
+
+```powershell
+'{"route":"hdgrowservice-get-order-list","body":{"page_no":1,"page_size":2}}' | Set-Content -Encoding ascii body.json
+curl.exe -s -X POST http://127.0.0.1:3003/rest/developer/server/hdgatewayservice/invoke `
+  -H "X-Api-Key: <key>" -H "Content-Type: application/json" --data-binary "@body.json"
+```
+
+或对双引号做转义（PowerShell 中双引号写成 `` `" `` 或 `\"` 由原生参数传递）：
+
+```powershell
+curl.exe -s -X POST http://127.0.0.1:3003/rest/developer/server/hdgatewayservice/invoke `
+  -H "X-Api-Key: <key>" -H "Content-Type: application/json" `
+  -d "{\`"route\`":\`"hdgrowservice-get-order-list\`",\`"body\`":{\`"page_no\`":1,\`"page_size\`":2}}"
+```
