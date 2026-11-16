@@ -156,7 +156,7 @@ UPDATE api_key SET enabled = 0 WHERE source = '<调用方标识>';
 
 | HTTP | 业务码 | 说明 |
 |------|--------|------|
-| 400 | `HDGW_INVALID_REQUEST` | 参数缺失/非法（path 校验失败等） |
+| 400 | `HDGW_INVALID_REQUEST` | 参数缺失/非法（path 校验失败、请求体 JSON 不可解析等，message 含具体原因） |
 | 401 | `HDGW_UNAUTHORIZED` | X-Api-Key 缺失/无效/已禁用（数据库 `api_key` 表无匹配） |
 | 404 | `HDGW_ROUTE_NOT_FOUND` | 路由未在白名单注册 |
 | 403 | `HDGW_ROUTE_FORBIDDEN` | 该 API Key 未授权访问此路由（key 级路由授权） |
