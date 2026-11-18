@@ -5,7 +5,7 @@ COPY pom.xml .
 COPY src ./src
 RUN mvn -B package -DskipTests
 
-FROM eclipse-temurin:21-jre
+FROM amazoncorretto:21.0.13-al2023-headless
 WORKDIR /app
 RUN mkdir -p /opt/cloud/logs/hdgatewayservice
 COPY --from=build /build/target/hdgatewayservice-0.0.1.jar app.jar
