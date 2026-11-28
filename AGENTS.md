@@ -5,7 +5,7 @@
 ## 常用命令
 
 ```bash
-mvn test                # 56 个单元测试（必须全绿才能提交）
+mvn test                # 59 个单元测试（必须全绿才能提交）
 mvn package             # 打包 target/hdgatewayservice-0.0.1.jar（Spring Boot fat jar）
 mvn package -DskipTests # 跳过测试快速打包
 ```
@@ -68,6 +68,9 @@ src/main/java/com/huaweicloud/hdgatewayservice/
 3. **log4j2 属性不能与 sys 属性同名**——`LOG_HOME` 自引用会死循环，已改名 `GW_LOG_HOME`。
 4. **Windows 下日志在 `C:\opt\cloud\logs\hdgatewayservice\`**（log4j2 默认 LOG_HOME），排查问题看 run.log（应用）/ interface.log（入站）/ call.log（出站，全脱敏）。
 5. **调用方 AK/SK 签名类接口不进网关**（码道/果办/DevStation 协议签署）：需要调用方本人 AK/SK 做 SDK-HMAC-SHA256 签名，与"网关持凭证"模型冲突，留在 hdkitservice。
+6. **`auth: NONE` 路由 = 直连内网**：走 `PassThroughTransport`，不加任何绿区认证头（这正是避开 `401 APIGW.0307` 的选择），但上游访问面完全依赖 API Key + `api_key.allowed_routes`——`allowed_routes` 空串 = 不限路由，接入敏感接口时必须为该 key 显式配置路由名。
+7. **public 仓库文档不得写集群内上游地址/服务名端口**：secret 键清单、README 路由表、`docs/` 一律写占位符（如 `<集群内 hdaccountservice 上游地址>`），真实值只进 secret/部署环境；`application.yml` 的 `url` 保持空默认值占位符。
+8. **gitleaks 全历史扫描会命中初始提交 d1fe2b4 的 JWT 单测夹具**（`test-jwt-secret-key-0123456789abcdef`、`another-jwt-secret-key-0123456789abcd`）：已由 `.gitleaks.toml` 精确放行这两个字面值；新增夹具值需同步加 allowlist，**不要**按目录/模式放宽。
 
 ## 测试约定
 

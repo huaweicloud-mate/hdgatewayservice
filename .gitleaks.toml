@@ -1,19 +1,21 @@
 # gitleaks 配置（CI 的 secret-scan 作业使用 fetch-depth: 0 扫描全部历史）
 #
 # 背景：初始提交 d1fe2b4 的 JWT 单测夹具里使用了固定测试密钥
-# `test-jwt-secret-key-0123456789abcdef`（JwtServiceTest.java 与
-# application-test.yml）。该 JWT 能力后续已下线、当前 HEAD 中不存在，
+# `test-jwt-secret-key-0123456789abcdef`（JwtServiceTest.java:17 与
+# application-test.yml）与 `another-jwt-secret-key-0123456789abcd`
+# （JwtServiceTest.java:37）。该 JWT 能力后续已下线、当前 HEAD 中不存在，
 # 但历史提交不可修改，gitleaks 每次全历史扫描都会命中，导致所有 PR 的
 # secret-scan 误报失败。
 #
-# 该值是仅供单测使用的假密钥，不是任何环境的真实凭证。这里只放行这一个
+# 这两个值都仅供单测使用，不是任何环境的真实凭证。这里只放行这两个
 # 测试夹具值本身，不按目录/文件名放行，以免掩盖测试代码里将来真正泄漏的
 # 密钥；默认规则集仍然生效。
 [extend]
 useDefault = true
 
 [allowlist]
-description = "test-only JWT signing key fixture in historical commit d1fe2b4"
+description = "test-only JWT signing key fixtures in historical commit d1fe2b4"
 regexes = [
   '''test-jwt-secret-key-0123456789abcdef''',
+  '''another-jwt-secret-key-0123456789abcd''',
 ]
